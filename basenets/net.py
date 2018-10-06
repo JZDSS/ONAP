@@ -10,7 +10,6 @@ class Net(object):
         self.name = name
         self.weight_decay = weight_decay
         self.inputs = {}
-        self.ground_truth = {}
         self.endpoints = {}
         self.outputs = {}
         self.loss = None

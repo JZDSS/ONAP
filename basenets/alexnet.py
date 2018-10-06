@@ -7,11 +7,14 @@ import numpy as np
 
 class AlexNet(net.Net):
 
-    def __init__(self, inputs, name='AlexNet', npy_path=None, weight_decay=0.0004, **kwargs):
+    def __init__(self, inputs, num_classes, name='AlexNet', npy_path=None, weight_decay=0.0004, **kwargs):
         super(AlexNet, self).__init__(weight_decay=weight_decay, name=name, **kwargs)
         self.inputs = inputs
         self.npy_path = npy_path
         self.is_training = tf.placeholder(dtype=tf.bool, shape=[])
+        self.num_classes = num_classes
+        self.loss = None
+        self.accuracy = None
         self.build()
         if self.npy_path:
             self.setup()
@@ -56,12 +59,19 @@ class AlexNet(net.Net):
             endpoints['fc6'] = y
             y = layers.conv2d(y, 4096, (1, 1), 1, 'VALID', scope='fc7')
             endpoints['fc7'] = y
-            y = layers.conv2d(y, 1000, (1, 1), 1, 'VALID', scope='fc8', activation_fn=None)
+            y = layers.conv2d(y, self.num_classes, (1, 1), 1, 'VALID', scope='fc8', activation_fn=None)
             endpoints['fc8'] = y
             self.outputs['logits'] = tf.squeeze(y)
 
     def calc_loss(self):
-        pass
+        self.loss = tf.losses.sparse_softmax_cross_entropy(self.inputs['ground_truth'],
+                                                           self.outputs['logits'])
+
+        with tf.name_scope('accuracy'):
+            correct_prediction = tf.equal(
+                tf.reshape(tf.argmax(self.outputs['logits'], 1), [-1, 1]),
+                self.inputs['ground_truth'])
+            self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
     def get_update_ops(self):
         return []
@@ -94,7 +104,7 @@ class AlexNet(net.Net):
             tf.add_to_collection(tf.GraphKeys.INIT_OP, w_init_op)
             tf.add_to_collection(tf.GraphKeys.INIT_OP, b_init_op)
 
-        scopes = ['fc7', 'fc8']
+        scopes = ['fc7', 'fc8'] if self.num_classes == 1000 else ['fc7']
         for scope in scopes:
             with tf.variable_scope(scope, reuse=True):
                 weights = tf.get_variable('weights')

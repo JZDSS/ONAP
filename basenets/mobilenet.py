@@ -1,3 +1,4 @@
+# encoding=UTF8
 import tensorflow as tf
 from tensorflow.contrib import layers
 from tensorflow.contrib.framework import arg_scope

@@ -27,7 +27,10 @@ class TFRecordsReader(Reader):
         raise NotImplementedError
 
     def _get_iterator(self, filenames, num_readers, read_threads, num_epochs):
-        dataset = tf.data.Dataset.list_files(filenames, True)
+        # TensorFlow 1.6
+        dataset = tf.data.Dataset.list_files(filenames)
+        # higher version TensorFlow
+        # dataset = tf.data.Dataset.list_files(filenames, True)
         dataset = dataset.interleave(
             tf.data.TFRecordDataset, num_readers, 1)
         dataset = dataset.map(self._parser, read_threads)

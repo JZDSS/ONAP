@@ -37,25 +37,27 @@ class PANOReader(tfrecordsreader.TFRecordsReader):
         images, labels = iterator.get_next()
         labels = labels - 1
         images = (images + 1) * 128
+        images = tf.expand_dims(images, 3)
+        images = tf.concat([images, images, images], axis=3)
         return images, labels
 
-if __name__ == '__main__':
-    data_dir = '../../data/PANO'
-    filenames = tf.train.match_filenames_once(os.path.join(data_dir, '*.tfrecord'))
-    images, labels = PANOReader(filenames, 1, 10, 4, num_epochs=1, drop_remainder=False).read()
-
-    with tf.Session() as sess:
-        tf.local_variables_initializer().run()
-        tf.global_variables_initializer().run()
-        sess.run(tf.get_collection(tf.GraphKeys.INIT_OP))
-        n = 0
-        while 1:
-            n += 1
-            try:
-                i, l = sess.run([images, labels])
-                print l
-                # print os.path.join('../' + str(l[0]), str(n) + '.jpg')
-                # cv2.imwrite(os.path.join('../' + str(l[0,]), str(n) + '.jpg'), i[0, :].astype(np.uint8))
-            except Exception as e:
-                print e
-                break
+# if __name__ == '__main__':
+#     data_dir = '../../data/PANO'
+#     filenames = tf.train.match_filenames_once(os.path.join(data_dir, '*.tfrecord'))
+#     images, labels = PANOReader(filenames, 1, 10, 4, num_epochs=1, drop_remainder=False).read()
+#
+#     with tf.Session() as sess:
+#         tf.local_variables_initializer().run()
+#         tf.global_variables_initializer().run()
+#         sess.run(tf.get_collection(tf.GraphKeys.INIT_OP))
+#         n = 0
+#         while 1:
+#             n += 1
+#             try:
+#                 i, l = sess.run([images, labels])
+#                 print l
+#                 # print os.path.join('../' + str(l[0]), str(n) + '.jpg')
+#                 # cv2.imwrite(os.path.join('../' + str(l[0,]), str(n) + '.jpg'), i[0, :].astype(np.uint8))
+#             except Exception as e:
+#                 print e
+#                 break

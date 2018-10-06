@@ -1,3 +1,5 @@
 .idea/
 images/
 *.pyc
+*.tfrecord*
+*.npy
