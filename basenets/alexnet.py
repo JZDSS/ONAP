@@ -68,10 +68,12 @@ class AlexNet(net.Net):
                                                            self.outputs['logits'])
 
         with tf.name_scope('accuracy'):
+            # a = tf.reshape(tf.argmax(self.outputs['logits'], 1), [-1, 1])
             correct_prediction = tf.equal(
                 tf.reshape(tf.argmax(self.outputs['logits'], 1), [-1, 1]),
-                self.inputs['ground_truth'])
-            self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+                tf.reshape(self.inputs['ground_truth'], [-1, 1]))
+            # a = tf.to_float(correct_prediction)
+            self.accuracy = tf.reduce_mean(tf.to_float(correct_prediction))
 
     def get_update_ops(self):
         return []

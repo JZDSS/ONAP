@@ -29,5 +29,5 @@ with tf.Session(config=config) as sess:
 
     for i in range(10000):
         sess.run([train_op])
-        if i % 100 == 0:
+        if i % 1 == 0:
             print(sess.run([net.loss, net.accuracy]))
