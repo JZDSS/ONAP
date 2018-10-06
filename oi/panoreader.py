@@ -31,14 +31,27 @@ class PANOReader(tfrecordsreader.TFRecordsReader):
                                                     name='features')
         image = tfrecord_features['data']
         label = tfrecord_features['label']
+        label = label - 1
+        image = tf.random_crop(image, [227, 227])
+        image = (image + 1) * 128
+
         return image, label
 
     def _post_process(self, iterator):
         images, labels = iterator.get_next()
-        labels = labels - 1
-        images = (images + 1) * 128
+        # labels = labels - 1
+
         images = tf.expand_dims(images, 3)
+        images = tf.image.random_flip_left_right(images)
+        #
+        images = tf.image.random_brightness(images, 32)
+        #
         images = tf.concat([images, images, images], axis=3)
+        images = tf.image.random_hue(images, 0.05)
+        images = tf.image.random_contrast(images, 0.5, 1.5)
+        images = tf.image.random_saturation(images, 0.5, 1.5)
+
+
         return images, labels
 
 # if __name__ == '__main__':

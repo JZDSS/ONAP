@@ -2,12 +2,16 @@ import tensorflow as tf
 import os
 from oi.panoreader import PANOReader
 from basenets import alexnet
+# tf.enable_eager_execution()
 
 data_dir = './data'
 filenames = tf.train.match_filenames_once(os.path.join(data_dir, '*.tfrecord'))
 images, labels = PANOReader(filenames, 10, 9, 4, num_epochs=None, drop_remainder=False).read()
 inputs = {'images': images,
           'ground_truth': labels}
+# import matplotlib.pyplot as plt
+# plt.imshow(inputs['images'][0, :, :, 0])
+# plt.show()
 net = alexnet.AlexNet(inputs, 5, npy_path='./npy/alexnet.npy')
 net.calc_loss()
 

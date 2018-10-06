@@ -11,7 +11,7 @@ class AlexNet(net.Net):
         super(AlexNet, self).__init__(weight_decay=weight_decay, name=name, **kwargs)
         self.inputs = inputs
         self.npy_path = npy_path
-        self.is_training = tf.placeholder(dtype=tf.bool, shape=[])
+        # self.is_training = tf.placeholder(dtype=tf.bool, shape=[])
         self.num_classes = num_classes
         self.loss = None
         self.accuracy = None
@@ -61,7 +61,7 @@ class AlexNet(net.Net):
             endpoints['fc7'] = y
             y = layers.conv2d(y, self.num_classes, (1, 1), 1, 'VALID', scope='fc8', activation_fn=None)
             endpoints['fc8'] = y
-            self.outputs['logits'] = tf.squeeze(y)
+            self.outputs['logits'] = tf.reshape(y, [-1, self.num_classes])
 
     def calc_loss(self):
         self.loss = tf.losses.sparse_softmax_cross_entropy(self.inputs['ground_truth'],
