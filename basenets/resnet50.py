@@ -8,20 +8,14 @@ from tensorflow.contrib.slim.nets import resnet_v2
 
 class ResNet50(net.Net):
 
-    def __init__(self, inputs, num_classes, name='ResNet', npy_path=None, weight_decay=0.0004, **kwargs):
+    def __init__(self, inputs, num_classes, name='ResNet', weight_decay=0.0004, **kwargs):
         super(ResNet50, self).__init__(weight_decay=weight_decay, name=name, **kwargs)
         self.inputs = inputs
-        self.npy_path = npy_path
         self.is_training = tf.placeholder(dtype=tf.bool, shape=[])
         self.num_classes = num_classes
         self.loss = None
         self.accuracy = None
         self.build()
-        if self.npy_path:
-            self.setup()
-
-    def set_npy_path(self, path):
-        self.npy_path = path
 
     def build(self):
         with slim.arg_scope(resnet_v2.resnet_arg_scope()):
@@ -29,6 +23,7 @@ class ResNet50(net.Net):
                                                             num_classes=self.num_classes,
                                                             is_training=self.is_training)
         self.outputs['logits'] = tf.reshape(logits, [-1, self.num_classes])
+
     def calc_loss(self):
         with tf.name_scope('loss'):
             self.loss = tf.losses.sparse_softmax_cross_entropy(self.inputs['ground_truth'],

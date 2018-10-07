@@ -2,7 +2,7 @@ import tensorflow as tf
 import time
 import os
 from oi.panoreader import PANOReader
-from basenets import alexnet
+from basenets import resnet50
 # tf.enable_eager_execution()
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 data_dir = './data'
@@ -14,7 +14,7 @@ images, labels = PANOReader(filenames, 32, 1, 4, num_epochs=None, drop_remainder
 inputs = {'images': images,
           'ground_truth': labels}
 tf.summary.image('show', images, 1)
-net = alexnet.AlexNet(inputs, 5)
+net = resnet50.ResNet50(inputs, 5)
 net.calc_loss()
 
 
@@ -45,7 +45,7 @@ with tf.Session() as sess:
             g = int(latest.split('-')[1]) if latest is not None else 0
             saver.restore(sess, latest)
 
-            summ = sess.run(summary_op)
+            summ = sess.run(summary_op, feed_dict={net.is_training: False})
             writer.add_summary(summ, g)
             writer.flush()
         curr = latest

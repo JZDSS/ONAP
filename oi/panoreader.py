@@ -51,7 +51,7 @@ class PANOReader(tfrecordsreader.TFRecordsReader):
         images = tf.image.random_contrast(images, 0.5, 1.5)
         images = tf.image.random_saturation(images, 0.5, 1.5)
 
-
+        # images = tf.image.per_image_standardization(images)
         return images, labels
 
 # if __name__ == '__main__':
