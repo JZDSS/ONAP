@@ -5,3 +5,4 @@ images/
 *.npy
 logs/
 ckpt/
+*.ckpt
