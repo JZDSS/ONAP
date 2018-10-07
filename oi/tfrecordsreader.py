@@ -34,7 +34,7 @@ class TFRecordsReader(Reader):
         dataset = dataset.interleave(
             tf.data.TFRecordDataset, num_readers, 1)
         dataset = dataset.map(self._parser, read_threads)
-        dataset = dataset.shuffle(buffer_size=10000)
+        dataset = dataset.shuffle(buffer_size=3 * self.batch_size)
         # TensorFlow version 1.6
         if self.drop_remainder:
             dataset = dataset.apply(tf.contrib.data.batch_and_drop_remainder(self.batch_size))

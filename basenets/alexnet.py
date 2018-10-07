@@ -64,8 +64,9 @@ class AlexNet(net.Net):
             self.outputs['logits'] = tf.reshape(y, [-1, self.num_classes])
 
     def calc_loss(self):
-        self.loss = tf.losses.sparse_softmax_cross_entropy(self.inputs['ground_truth'],
-                                                           self.outputs['logits'])
+        with tf.name_scope('loss'):
+            self.loss = tf.losses.sparse_softmax_cross_entropy(self.inputs['ground_truth'],
+                                                               self.outputs['logits'])
 
         with tf.name_scope('accuracy'):
             # a = tf.reshape(tf.argmax(self.outputs['logits'], 1), [-1, 1])
@@ -74,6 +75,8 @@ class AlexNet(net.Net):
                 tf.reshape(self.inputs['ground_truth'], [-1, 1]))
             # a = tf.to_float(correct_prediction)
             self.accuracy = tf.reduce_mean(tf.to_float(correct_prediction))
+        tf.summary.scalar('loss', self.loss)
+        tf.summary.scalar('accuracy', self.accuracy)
 
     def get_update_ops(self):
         return []
