@@ -8,7 +8,7 @@ data_dir = './data'
 ckpt_dir = './ckpt'
 
 filenames = tf.train.match_filenames_once(os.path.join(data_dir, '*.tfrecord'))
-images, labels = PANOReader(filenames, 32, 9, 4, num_epochs=None, drop_remainder=False).read()
+images, labels = PANOReader(filenames, 18, 10, 4, num_epochs=None, drop_remainder=False, shuffle=True).read()
 inputs = {'images': images,
           'ground_truth': labels}
 tf.summary.image('show', images, 1)
@@ -48,7 +48,7 @@ with tf.Session(config=config) as sess:
     sess.run(tf.get_collection(tf.GraphKeys.INIT_OP))
     if g > 0:
         # saver.recover_last_checkpoints(ckpt_dir)
-        saver.restore(sess, os.path.join(ckpt_dir, latest))
+        saver.restore(sess, latest)
         print('load ckpt %d' % g)
 
     for i in range(g, 10000):

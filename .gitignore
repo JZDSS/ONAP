@@ -6,3 +6,5 @@ images/
 logs/
 ckpt/
 *.ckpt
+result.txt
+

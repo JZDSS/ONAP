@@ -1,7 +1,7 @@
 import tensorflow as tf
 import time
 import os
-from oi.panoreader import PANOReader
+from oi.panoreader_eval import PANOReader
 from basenets import resnet50
 # tf.enable_eager_execution()
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
@@ -10,7 +10,7 @@ ckpt_dir = './ckpt'
 
 # with tf.device('/cpu:0'):
 filenames = tf.train.match_filenames_once(os.path.join(data_dir, '*.tfrecords'))
-images, labels = PANOReader(filenames, 32, 1, 4, num_epochs=None, drop_remainder=False).read()
+images, labels = PANOReader(filenames, 32, 1, 4, num_epochs=None, drop_remainder=False, shuffle=True).read()
 inputs = {'images': images,
           'ground_truth': labels}
 tf.summary.image('show', images, 1)

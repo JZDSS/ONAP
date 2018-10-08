@@ -14,6 +14,7 @@ class TFRecordsReader(Reader):
                  read_threads,
                  num_epochs=None,
                  drop_remainder=True,
+                 shuffle=True,
                  fake=False, **kwargs):
         super(TFRecordsReader, self).__init__(batch_size, fake, **kwargs)
         self.filenames = filenames
@@ -21,20 +22,22 @@ class TFRecordsReader(Reader):
         self.read_threads = read_threads
         self.num_epochs = num_epochs
         self.drop_remainder = drop_remainder
+        self.shuffle = shuffle
 
     @abstractmethod
     def _parser(self, record):
         raise NotImplementedError
 
-    def _get_iterator(self, filenames, num_readers, read_threads, num_epochs):
+    def _get_iterator(self):
         # TensorFlow 1.6
-        dataset = tf.data.Dataset.list_files(filenames)
+        dataset = tf.data.Dataset.list_files(self.filenames)
         # higher version TensorFlow
         # dataset = tf.data.Dataset.list_files(filenames, True)
         dataset = dataset.interleave(
-            tf.data.TFRecordDataset, num_readers, 1)
-        dataset = dataset.map(self._parser, read_threads)
-        dataset = dataset.shuffle(buffer_size=3 * self.batch_size)
+            tf.data.TFRecordDataset, self.num_readers, 1)
+        dataset = dataset.map(self._parser, self.read_threads)
+        if self.shuffle:
+            dataset = dataset.shuffle(buffer_size=3 * self.batch_size)
         # TensorFlow version 1.6
         if self.drop_remainder:
             dataset = dataset.apply(tf.contrib.data.batch_and_drop_remainder(self.batch_size))
@@ -42,7 +45,7 @@ class TFRecordsReader(Reader):
             dataset = dataset.batch(self.batch_size)
         # Tensorflow version 1.10+
         # dataset = dataset.batch(self.batch_size, drop_remainder=self.drop_remainder)
-        dataset = dataset.repeat(num_epochs)
+        dataset = dataset.repeat(self.num_epochs)
         try:
             iterator = dataset.make_one_shot_iterator()
         except ValueError:
@@ -53,10 +56,7 @@ class TFRecordsReader(Reader):
     def read(self):
         iterator = None
         if not self.fake:
-            iterator = self._get_iterator(self.filenames,
-                                          self.num_readers,
-                                          self.read_threads,
-                                          self.num_epochs)
+            iterator = self._get_iterator()
         return self._post_process(iterator)
 
     def _post_process(self, iterator):
