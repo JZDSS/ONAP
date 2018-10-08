@@ -23,6 +23,7 @@ class ResNet50(net.Net):
                                                             num_classes=self.num_classes,
                                                             is_training=self.is_training)
         self.outputs['logits'] = tf.reshape(logits, [-1, self.num_classes])
+        self.outputs['argmax'] = tf.argmax(self.outputs['logits'], axis=1, name='output/predict')
 
     def calc_loss(self):
         with tf.name_scope('loss'):

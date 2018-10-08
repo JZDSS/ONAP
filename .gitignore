@@ -7,4 +7,4 @@ logs/
 ckpt/
 *.ckpt
 result.txt
-
+*.pb
