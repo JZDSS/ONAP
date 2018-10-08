@@ -44,7 +44,7 @@ with tf.Session(config=config) as sess:
     writer = tf.summary.FileWriter('logs/train', sess.graph)
     tf.global_variables_initializer().run()
     tf.local_variables_initializer().run()
-    saver0.restore(sess, 'resnet_v2_50.ckpt', )
+    saver0.restore(sess, 'resnet_v2_50.ckpt', ) # download from http://download.tensorflow.org/models/resnet_v2_50_2017_04_14.tar.gz
     sess.run(tf.get_collection(tf.GraphKeys.INIT_OP))
     if g > 0:
         # saver.recover_last_checkpoints(ckpt_dir)
