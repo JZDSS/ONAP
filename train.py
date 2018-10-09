@@ -4,7 +4,7 @@ from oi.panoreader import PANOReader
 from basenets import resnet50
 # tf.enable_eager_execution()
 
-data_dir = './data'
+data_dir = './data2'
 ckpt_dir = './ckpt'
 
 filenames = tf.train.match_filenames_once(os.path.join(data_dir, '*.tfrecord'))

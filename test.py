@@ -39,4 +39,4 @@ def model_test(filename):
     return pre_list
 
 if __name__ == '__main__':
-    prediction = model_test('./data/TFcodeX_10.tfrecord')
+    prediction = model_test('./data/TFcodeX_10.tfrecords')

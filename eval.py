@@ -5,7 +5,7 @@ from oi.panoreader_eval import PANOReader
 from basenets import resnet50
 # tf.enable_eager_execution()
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
-data_dir = './data'
+data_dir = './data2'
 ckpt_dir = './ckpt'
 
 # with tf.device('/cpu:0'):
