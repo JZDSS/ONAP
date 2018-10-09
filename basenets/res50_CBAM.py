@@ -1,15 +1,13 @@
 import tensorflow as tf
-from tensorflow.contrib import layers
-from tensorflow.contrib.framework import arg_scope
 from basenets import net
 from tensorflow.contrib import slim
-from tensorflow.contrib.slim.nets import resnet_v2
+from basenets import resnet_v2
 
 
-class ResNet50(net.Net):
+class Res50_CBAM(net.Net):
 
     def __init__(self, inputs, num_classes, name='ResNet', weight_decay=0.0004, **kwargs):
-        super(ResNet50, self).__init__(weight_decay=weight_decay, name=name, **kwargs)
+        super(Res50_CBAM, self).__init__(weight_decay=weight_decay, name=name, **kwargs)
         self.inputs = inputs
         self.is_training = tf.placeholder(dtype=tf.bool, shape=[])
         self.num_classes = num_classes
@@ -18,7 +16,7 @@ class ResNet50(net.Net):
         self.build()
 
     def build(self):
-        with slim.arg_scope(resnet_v2.resnet_arg_scope()):
+        with slim.arg_scope(resnet_v2.resnet_arg_scope(batch_norm_decay=0.999)):
             logits, self.endpoints = resnet_v2.resnet_v2_50(self.inputs['images'],
                                                             num_classes=self.num_classes,
                                                             is_training=self.is_training)

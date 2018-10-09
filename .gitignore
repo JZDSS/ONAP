@@ -3,8 +3,8 @@ images*/
 *.pyc
 *.tfrecord*
 *.npy
-logs/
-ckpt/
+logs*/
+ckpt*/
 *.ckpt
 result.txt
 *.pb

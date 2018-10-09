@@ -2,22 +2,27 @@ import tensorflow as tf
 import os
 from oi.panoreader import PANOReader
 from basenets import resnet50
+from basenets import res50_CBAM
 # tf.enable_eager_execution()
 
 data_dir = './data2'
 ckpt_dir = './ckpt'
+batch_size = 8
 
 filenames = tf.train.match_filenames_once(os.path.join(data_dir, '*.tfrecord'))
-images, labels = PANOReader(filenames, 18, 10, 4, num_epochs=None, drop_remainder=False, shuffle=True).read()
+images, labels = PANOReader(filenames, batch_size, 9, 4, num_epochs=None, drop_remainder=False, shuffle=True).read()
 inputs = {'images': images,
           'ground_truth': labels}
 tf.summary.image('show', images, 1)
-net = resnet50.ResNet50(inputs, 5)
+net = res50_CBAM.Res50_CBAM(inputs, 5)
 net.calc_loss()
 var_list = {v.op.name: v
                 for v in tf.get_collection(tf.GraphKeys.VARIABLES)}
 del var_list[u'resnet_v2_50/logits/biases']
 del var_list[u'resnet_v2_50/logits/weights']
+for key in var_list.keys():
+    if key.find('CBAM') != -1:
+        del var_list[key]
 saver0 = tf.train.Saver(name='saver0', var_list=var_list)
 
 saver = tf.train.Saver(max_to_keep=5,
@@ -27,8 +32,8 @@ latest = tf.train.latest_checkpoint(ckpt_dir)
 
 g = int(latest.split('-')[1]) if latest is not None else 0
 global_step = tf.Variable(g, name='global_step', trainable=False)
-# learning_rate = tf.train.piecewise_constant(global_step, [2000, 4000], [0.001, 0.0001, 0.00001])
-learning_rate = tf.train.exponential_decay(0.001, global_step, 100, 0.99)
+learning_rate = tf.train.piecewise_constant(global_step, [50000, 75000], [0.001, 0.0001, 0.00001])
+# learning_rate = tf.train.exponential_decay(0.01, global_step, 200, 0.99)
 tf.summary.scalar('lr', learning_rate)
 opt = tf.train.MomentumOptimizer(learning_rate, 0.9)
 with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
@@ -51,7 +56,7 @@ with tf.Session(config=config) as sess:
         saver.restore(sess, latest)
         print('load ckpt %d' % g)
 
-    for i in range(g, 10000):
+    for i in range(g, 100000):
         sess.run(train_op, feed_dict={net.is_training: True})
         if i % 100 == 0:
             summ = sess.run(summary_op, feed_dict={net.is_training: False})
