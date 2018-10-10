@@ -37,6 +37,7 @@ class PANOReader(tfrecordsreader.TFRecordsReader):
         image = (image + 1) * 128
         image = tf.expand_dims(image, 2)
         image = tf.concat([image, image, image], axis=2)
+        image = tf.image.per_image_standardization(image)
         return image, label
 
     def _post_process(self, iterator):
@@ -45,7 +46,7 @@ class PANOReader(tfrecordsreader.TFRecordsReader):
         return images, labels
 
 if __name__ == '__main__':
-    data_dir = '../data2/'
+    data_dir = '../data/'
     filenames = tf.train.match_filenames_once(os.path.join(data_dir, '*.tfrecord'))
     images, labels = PANOReader(filenames, 1, 10, 4, num_epochs=1, drop_remainder=False).read()
 
@@ -60,7 +61,7 @@ if __name__ == '__main__':
                 i, l = sess.run([images, labels])
                 print l
                 # print os.path.join('../' + str(l[0]), str(n) + '.jpg')
-                cv2.imwrite(os.path.join('../images2/' + str(l[0,]), str(n) + '.jpg'), i[0, :].astype(np.uint8))
+                cv2.imwrite(os.path.join('../images/' + str(l[0,]), str(n) + '.jpg'), i[0, :].astype(np.uint8))
             except Exception as e:
                 print e
                 break

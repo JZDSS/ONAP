@@ -41,17 +41,18 @@ class PANOReader(tfrecordsreader.TFRecordsReader):
         image = tf.random_crop(image, [256, 256, 1])
 
         image = tf.concat([image, image, image], axis=2)
+        image = tf.image.random_flip_left_right(image)
+        image = tf.image.random_brightness(image, 32)
+        image = tf.image.random_hue(image, 0.05)
+        image = tf.image.random_contrast(image, 0.5, 1.5)
+        image = tf.image.random_saturation(image, 0.5, 1.5)
+        image = tf.image.per_image_standardization(image)
         return image, label
 
     def _post_process(self, iterator):
         images, labels = iterator.get_next()
-        images = tf.image.random_flip_left_right(images)
-        images = tf.image.random_brightness(images, 32)
-        images = tf.image.random_hue(images, 0.05)
-        images = tf.image.random_contrast(images, 0.5, 1.5)
-        images = tf.image.random_saturation(images, 0.5, 1.5)
 
-        # images = tf.image.per_image_standardization(images)
+
         return images, labels
 
 if __name__ == '__main__':

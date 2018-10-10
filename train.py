@@ -3,16 +3,20 @@ import os
 from oi.panoreader import PANOReader
 from basenets import resnet50
 from basenets import res50_CBAM
+from scipy import signal
 # tf.enable_eager_execution()
 
 data_dir = './data2'
 ckpt_dir = './ckpt'
-batch_size = 8
+batch_size = 10
 
 filenames = tf.train.match_filenames_once(os.path.join(data_dir, '*.tfrecord'))
 images, labels = PANOReader(filenames, batch_size, 9, 4, num_epochs=None, drop_remainder=False, shuffle=True).read()
-inputs = {'images': images,
-          'ground_truth': labels}
+
+x = tf.placeholder(shape=(None, 256, 256, 3), dtype=tf.float32)
+y = tf.placeholder(shape=(None,), dtype=tf.int64)
+inputs = {'images': x,
+          'ground_truth': y}
 tf.summary.image('show', images, 1)
 net = res50_CBAM.Res50_CBAM(inputs, 5)
 net.calc_loss()
@@ -56,11 +60,18 @@ with tf.Session(config=config) as sess:
         saver.restore(sess, latest)
         print('load ckpt %d' % g)
 
-    for i in range(g, 100000):
-        sess.run(train_op, feed_dict={net.is_training: True})
+    for i in range(g, 100001):
+        d, l = sess.run([images, labels])
+        for b in range(d.shape[0]):
+            for c in range(3):
+                d[b, :, :, c] = signal.medfilt2d(d[b, :, :, c], (3, 3))
+
         if i % 100 == 0:
-            summ = sess.run(summary_op, feed_dict={net.is_training: False})
+            summ = sess.run(summary_op, feed_dict={x: d, y: l, net.is_training: False})
             writer.add_summary(summ, i)
             writer.flush()
             saver.save(sess, os.path.join(ckpt_dir, net.name), i)
+
+        sess.run(train_op, feed_dict={x: d, y: l, net.is_training: True})
+
     writer.close()
