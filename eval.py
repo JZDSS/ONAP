@@ -3,6 +3,7 @@ import time
 import os
 from oi.panoreader_eval import PANOReader
 from basenets import res50_CBAM
+from basenets import resnet50
 from scipy import signal
 # tf.enable_eager_execution()
 os.environ["CUDA_VISIBLE_DEVICES"]="-1"
@@ -10,16 +11,16 @@ data_dir = './data2'
 ckpt_dir = './ckpt'
 batch_size = 16
 # with tf.device('/cpu:0'):
-filenames = tf.train.match_filenames_once(os.path.join(data_dir, '*.tfrecords'))
+filenames = tf.train.match_filenames_once(os.path.join(data_dir, '*.tfrecordv'))
 images, labels = PANOReader(filenames, batch_size, 1, 4, num_epochs=None, drop_remainder=False, shuffle=True).read()
 
-x = tf.placeholder(shape=(None, 256, 256, 3), dtype=tf.float32)
-y = tf.placeholder(shape=(None), dtype=tf.int64)
-inputs = {'images': x,
-          'ground_truth': y}
+# x = tf.placeholder(shape=(None, 256, 256, 3), dtype=tf.float32)
+# y = tf.placeholder(shape=(None), dtype=tf.int64)
+inputs = {'images': images,
+          'ground_truth': labels}
 tf.summary.image('show', images, 1)
 net = res50_CBAM.Res50_CBAM(inputs, 5)
-net.calc_loss()
+net.calc_loss(False)
 
 
 latest = tf.train.latest_checkpoint(ckpt_dir)
@@ -49,12 +50,12 @@ with tf.Session() as sess:
             g = int(latest.split('-')[1]) if latest is not None else 0
             saver.restore(sess, latest)
 
-            d, l = sess.run([images, labels])
-            for b in range(d.shape[0]):
-                for c in range(3):
-                    d[b, :, :, c] = signal.medfilt2d(d[b, :, :, c], (3, 3))
+            # d, l = sess.run([images, labels])
+            # for b in range(d.shape[0]):
+            #     for c in range(3):
+            #         d[b, :, :, c] = signal.medfilt2d(d[b, :, :, c], (3, 3))
 
-            summ = sess.run(summary_op, feed_dict={x: d, y: l, net.is_training: False})
+            summ = sess.run(summary_op, feed_dict={net.is_training: False})
             writer.add_summary(summ, g)
             writer.flush()
         curr = latest

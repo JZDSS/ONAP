@@ -124,13 +124,13 @@ def bottleneck(inputs,
         scope='conv3')
     with variable_scope.variable_scope('CBAM'):
         max_c = math_ops.reduce_max(residual, axis=[1, 2], name='max_c')
-        max_c = layers_lib.fully_connected(max_c, int(depth / 2), nn_ops.relu, normalizer_fn=None,
+        max_c = layers_lib.fully_connected(max_c, int(depth / 8), nn_ops.relu, normalizer_fn=None,
                                            scope='share1')
         max_c = layers_lib.fully_connected(max_c, depth, None, normalizer_fn=None,
                                            scope='share2')
 
         avg_c = math_ops.reduce_mean(residual, axis=[1, 2], name='avg_c')
-        avg_c = layers_lib.fully_connected(avg_c, int(depth / 2), nn_ops.relu, normalizer_fn=None,
+        avg_c = layers_lib.fully_connected(avg_c, int(depth / 8), nn_ops.relu, normalizer_fn=None,
                                            scope='share1', reuse=True)
         avg_c = layers_lib.fully_connected(avg_c, depth, None, normalizer_fn=None,
                                            scope='share2', reuse=True)

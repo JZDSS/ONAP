@@ -23,11 +23,20 @@ class Res50_CBAM(net.Net):
         self.outputs['logits'] = tf.reshape(logits, [-1, self.num_classes])
         self.outputs['argmax'] = tf.argmax(self.outputs['logits'], axis=1, name='output/predict')
 
-    def calc_loss(self):
+    def calc_loss(self, focal):
         with tf.name_scope('loss'):
-            self.loss = tf.losses.sparse_softmax_cross_entropy(self.inputs['ground_truth'],
+            logits = self.outputs['logits']
+            labels = self.inputs['ground_truth']
+            if focal:
+                one_hot = tf.one_hot(labels, self.num_classes)
+                weights = 1 - tf.reduce_sum(
+                    tf.multiply(one_hot, tf.nn.softmax(logits, axis=-1)), axis=-1)
+                self.loss = tf.losses.sparse_softmax_cross_entropy(labels,
+                                                                   logits,
+                                                                   weights=weights)
+            else:
+                self.loss = tf.losses.sparse_softmax_cross_entropy(self.inputs['ground_truth'],
                                                                self.outputs['logits'])
-
         with tf.name_scope('accuracy'):
             # a = tf.reshape(tf.argmax(self.outputs['logits'], 1), [-1, 1])
             correct_prediction = tf.equal(

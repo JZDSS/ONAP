@@ -8,3 +8,4 @@ ckpt*/
 *.ckpt
 result.txt
 *.pb
+res/
