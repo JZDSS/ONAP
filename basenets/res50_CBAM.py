@@ -29,8 +29,9 @@ class Res50_CBAM(net.Net):
             labels = self.inputs['ground_truth']
             if focal:
                 one_hot = tf.one_hot(labels, self.num_classes)
-                weights = 1 - tf.reduce_sum(
-                    tf.multiply(one_hot, tf.nn.softmax(logits, axis=-1)), axis=-1)
+                weights = tf.pow(1 - tf.reduce_sum(
+                    tf.multiply(one_hot, tf.nn.softmax(logits, axis=-1)), axis=-1), self.gamma)
+                tf.stop_gradient(weights)
                 self.loss = tf.losses.sparse_softmax_cross_entropy(labels,
                                                                    logits,
                                                                    weights=weights)
