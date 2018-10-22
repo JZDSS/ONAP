@@ -246,8 +246,8 @@ def resnet_v2(inputs,
         if global_pool:
           # Global average pooling.
           net = math_ops.reduce_mean(net, [1, 2], name='pool5', keepdims=True)
-        if is_training:
-          net = layers_lib.dropout(net, 0.5, is_training=is_training, scope='dropout')
+
+        net = layers_lib.dropout(net, 0.5, is_training=is_training, scope='dropout')
 
         if num_classes is not None:
           net = layers_lib.conv2d(
