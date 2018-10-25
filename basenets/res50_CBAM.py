@@ -6,7 +6,7 @@ from basenets import resnet_v2
 
 class Res50_CBAM(net.Net):
 
-    def __init__(self, inputs, num_classes, name='ResNet', weight_decay=0.0004, **kwargs):
+    def __init__(self, inputs, num_classes, name='ResNet', weight_decay=0.0001, **kwargs):
         super(Res50_CBAM, self).__init__(weight_decay=weight_decay, name=name, **kwargs)
         self.inputs = inputs
         self.is_training = tf.placeholder(dtype=tf.bool, shape=[])
@@ -16,7 +16,7 @@ class Res50_CBAM(net.Net):
         self.build()
 
     def build(self):
-        with slim.arg_scope(resnet_v2.resnet_arg_scope(batch_norm_decay=0.999)):
+        with slim.arg_scope(resnet_v2.resnet_arg_scope(batch_norm_decay=0.999, weight_decay=self.weight_decay)):
             logits, self.endpoints = resnet_v2.resnet_v2_50(self.inputs['images'],
                                                             num_classes=self.num_classes,
                                                             is_training=self.is_training)
@@ -38,6 +38,9 @@ class Res50_CBAM(net.Net):
             else:
                 self.loss = tf.losses.sparse_softmax_cross_entropy(self.inputs['ground_truth'],
                                                                self.outputs['logits'])
+            reg = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+            self.loss += reg
+    
         with tf.name_scope('accuracy'):
             # a = tf.reshape(tf.argmax(self.outputs['logits'], 1), [-1, 1])
             correct_prediction = tf.equal(
